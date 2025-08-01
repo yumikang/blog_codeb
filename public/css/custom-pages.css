@@ -1,0 +1,122 @@
+/* Custom CSS for Magzin Blog Pages */
+
+/* Page transitions and animations */
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card hover effects */
+.hover-card {
+  transition: all 0.3s ease-in-out;
+  border: none !important;
+}
+
+.hover-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+}
+
+/* Enhanced badge styles */
+.badge {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Page header styles */
+.display-4 {
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.lead {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Post card enhancements */
+.card-img-top {
+  transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+.card-title a {
+  transition: color 0.2s ease;
+}
+
+.card-title a:hover {
+  color: var(--bs-primary) !important;
+}
+
+/* Pagination styles */
+.pagination .page-link {
+  border-radius: 50px;
+  margin: 0 2px;
+  border: none;
+  color: var(--bs-primary);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+/* Category specific colors for badges */
+.bg-purple {
+  background-color: #6f42c1 !important;
+}
+
+.bg-pink {
+  background-color: #d63384 !important;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .display-4 {
+    font-size: 2rem;
+  }
+  
+  .card-img-top {
+    height: 200px !important;
+  }
+  
+  .badge.fs-6 {
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Utility classes */
+.text-decoration-none:hover {
+  text-decoration: underline !important;
+}
+
+.btn-outline-primary:hover {
+  transform: translateY(-1px);
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Focus improvements for accessibility */
+.card:focus-within,
+.btn:focus,
+a:focus {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}

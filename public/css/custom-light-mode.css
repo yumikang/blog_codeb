@@ -1,0 +1,41 @@
+/* Custom CSS for Light Mode Only - Magzin Blog */
+
+/* Override any dark mode specific styles to ensure light mode consistency */
+
+/* Remove dark mode switcher if present */
+.dark-light-switcher {
+  display: none !important;
+}
+
+/* Ensure light mode color variables are used */
+body {
+  --tc-neutral-50: #f7f8f9;
+  --tc-neutral-100: #eaecee;
+  --tc-neutral-200: #e5e7eb;
+  --tc-neutral-300: #d1d5db;
+  --tc-neutral-400: #a7aaaf;
+  --tc-neutral-500: #75787d;
+  --tc-neutral-600: #626568;
+  --tc-neutral-700: #3a3b3d;
+  --tc-neutral-800: #1a1b1c;
+  --tc-neutral-900: #0e0e0f;
+  --tc-system-white: #ffffff;
+  --tc-system-dark: #000000;
+  --tc-bg-1: #f2f2e9;
+  --tc-bg-2: #e3dcf6;
+  --tc-bg-3: #f2fbf9;
+  --tc-bg-4: #eef2ff;
+  --tc-bg-5: #fff7ee;
+}
+
+/* Ensure no dark mode classes are applied */
+.dark-mode-invert {
+  filter: none !important;
+}
+
+/* Override any data-bs-theme dark styles that might interfere */
+[data-bs-theme=light] body,
+body {
+  background-color: var(--tc-system-white);
+  color: var(--tc-neutral-900);
+}

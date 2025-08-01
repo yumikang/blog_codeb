@@ -1,0 +1,135 @@
+/* Custom CSS for simplified layout */
+
+/* Header styles */
+.site-header {
+  background: #fff;
+  padding: 1rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.site-header .navbar {
+  padding: 0;
+}
+
+.site-header .navbar-brand img {
+  height: 40px;
+}
+
+.site-header .navbar-nav {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+}
+
+.site-header .nav-link {
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0;
+}
+
+.site-header .nav-link:hover {
+  color: #000;
+}
+
+/* Remove duplicate menus and sidebars */
+.offCanvas__info,
+.offCanvas__overly,
+.sidebar-left,
+.sidebar-overlay,
+.menu-tigger,
+.search-icon,
+.topbar,
+.navbar .dropdown-menu,
+.navbar .mega-menu-item,
+.navbar .has-child {
+  display: none !important;
+}
+
+/* Main content adjustments */
+main {
+  min-height: calc(100vh - 200px);
+}
+
+/* Fix swiper layout */
+.swiper-card-hero {
+  padding: 2rem 0;
+}
+
+.swiper-card-hero .swiper-slide {
+  height: auto;
+}
+
+/* Card layout fixes */
+.card-1 {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-1 .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section spacing */
+.sec-padding {
+  padding: 4rem 0;
+}
+
+/* Footer styles */
+footer {
+  background: #f8f9fa;
+  padding: 3rem 0 1rem;
+  margin-top: 4rem;
+  border-top: 1px solid #eee;
+}
+
+/* Simplified Navbar */
+.navbar .navbar-nav {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar .nav-item {
+  margin: 0 1rem;
+}
+
+.navbar .nav-link {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  padding: 0.5rem 0;
+}
+
+/* Hide dropdown toggles */
+.navbar .dropdown-toggle::after {
+  display: none;
+}
+
+/* Ensure clean layout */
+.navbar-collapse {
+  justify-content: center !important;
+}
+
+/* Card hover effects */
+.hover-effect-1 {
+  transition: transform 0.3s ease;
+}
+
+.hover-effect-1:hover {
+  transform: translateY(-5px);
+}
+
+.hover-up {
+  transition: transform 0.3s ease;
+}
+
+.hover-up:hover {
+  transform: translateY(-5px);
+}

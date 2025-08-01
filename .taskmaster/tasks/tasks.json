@@ -1,0 +1,511 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "프로젝트 초기 설정 및 Remix 환경 구성",
+        "description": "Remix 프레임워크 기반 프로젝트 초기화 및 개발 환경 설정",
+        "details": "Remix 프로젝트 생성, TypeScript 설정, 필요한 패키지 설치, 개발 환경 구성. ESLint, Prettier 설정 포함.",
+        "testStrategy": "프로젝트가 정상적으로 빌드되고 실행되는지 확인",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Supabase 프로젝트 설정 및 데이터베이스 스키마 구현",
+        "description": "Supabase 프로젝트 생성 및 필요한 테이블(subdomains, posts, comments) 스키마 구현",
+        "details": "Supabase 프로젝트 생성, 데이터베이스 테이블 생성(subdomains, posts, comments), RLS 정책 설정, 초기 데이터 시딩",
+        "testStrategy": "데이터베이스 연결 테스트, CRUD 작업 테스트",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Supabase 프로젝트 생성 및 환경 설정",
+            "description": "Supabase 패키지 설치, 환경 변수 설정, .env.example 업데이트",
+            "details": "@supabase/supabase-js 설치, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY 환경 변수 추가",
+            "status": "done",
+            "dependencies": []
+          },
+          {
+            "id": 2,
+            "title": "데이터베이스 스키마 설계 및 생성",
+            "description": "멀티-블로그 시스템을 위한 5개 테이블 스키마 작성",
+            "details": "subdomains, posts, comments, admin_users, profiles 테이블 생성. 적절한 인덱스, 제약조건, 트리거 함수 포함",
+            "status": "done",
+            "dependencies": [
+              1
+            ]
+          },
+          {
+            "id": 3,
+            "title": "RLS 정책 구현",
+            "description": "Supabase 보안 정책 설정 및 사용자 접근 제어",
+            "details": "모든 테이블에 RLS 활성화, 공개/인증/관리자 권한별 정책 구현, 댓글 스팸 방지, 사용자 프로필 자동 생성",
+            "status": "done",
+            "dependencies": [
+              2
+            ]
+          },
+          {
+            "id": 4,
+            "title": "초기 데이터 시딩",
+            "description": "10개 서브도메인 및 샘플 포스트 데이터 생성",
+            "details": "PRD의 10개 서브도메인, 각 카테고리별 샘플 포스트, 기본 관리자 계정 생성",
+            "status": "done",
+            "dependencies": [
+              3
+            ]
+          },
+          {
+            "id": 5,
+            "title": "Remix Supabase 클라이언트 설정",
+            "description": "클라이언트/서버 사이드 Supabase 클라이언트 및 타입 정의",
+            "details": "supabase.client.ts, supabase.server.ts, database.ts 타입 정의, Google OAuth 헬퍼 함수, 데이터베이스 쿼리 헬퍼",
+            "status": "done",
+            "dependencies": [
+              4
+            ]
+          },
+          {
+            "id": 6,
+            "title": "데이터베이스 연결 테스트 및 검증",
+            "description": "TypeScript 컴파일, 빌드 성공, 통합 테스트",
+            "details": "npm run typecheck 성공, npm run build 성공, Supabase 클라이언트 초기화 검증 완료",
+            "status": "done",
+            "dependencies": [
+              5
+            ]
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Magzin 템플릿 자산 통합",
+        "description": "기존 Magzin HTML 템플릿의 CSS, JS, 이미지 등 정적 자산을 Remix 프로젝트에 통합",
+        "details": "public 폴더에 assets 구조 구성, CSS 파일 연결, 필요한 JS 라이브러리 통합, 다크모드 관련 코드 제거",
+        "testStrategy": "템플릿 스타일이 올바르게 적용되는지 확인",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "CSS 파일들의 올바른 경로 설정 및 연결",
+            "description": "Bootstrap Grid, Swiper, AOS 등 vendor CSS와 main.css를 root.tsx의 links 함수에 올바른 순서로 추가",
+            "details": "bootstrap-grid.min.css → swiper-bundle.min.css → aos.css → magnific-popup.css → carouselTicker.css → odometer.css → main.css 순서로 로드",
+            "status": "done",
+            "dependencies": []
+          },
+          {
+            "id": 2,
+            "title": "JavaScript 라이브러리들의 순서대로 로드",
+            "description": "jQuery 기반 라이브러리들과 GSAP 관련 스크립트들을 의존성 순서대로 Layout 컴포넌트에 추가",
+            "details": "jQuery → Swiper → AOS → Magnific Popup → 기타 jQuery 플러그인들 → GSAP 관련 → 커스텀 스크립트 순서",
+            "status": "done",
+            "dependencies": [
+              1
+            ]
+          },
+          {
+            "id": 3,
+            "title": "다크모드 관련 코드 완전 제거",
+            "description": "color-modes.js 스크립트 제거 및 CSS에서 다크모드 관련 변수와 클래스 정리",
+            "details": "color-modes.js 파일 삭제, .dark-mode-invert 클래스 사용 확인, CSS 다크모드 변수 정리, custom-light-mode.css 추가",
+            "status": "done",
+            "dependencies": [
+              2
+            ]
+          },
+          {
+            "id": 4,
+            "title": "이미지 및 폰트 경로 확인",
+            "description": "public 폴더 내 이미지와 폰트 파일들의 경로가 올바르게 설정되었는지 확인",
+            "details": "/imgs/template/logo/, /imgs/page/, /imgs/other/ 경로 확인, 폰트는 Google Fonts 사용, 프리로더 로고 경로 확인 완료",
+            "status": "done",
+            "dependencies": [
+              3
+            ]
+          },
+          {
+            "id": 5,
+            "title": "프리로더 및 기본 HTML 구조 적용",
+            "description": "Magzin 템플릿의 프리로더와 기본 body 구조를 Layout 컴포넌트에 적용",
+            "details": "preloader div 구조 추가, 로고 이미지 경로 설정, 기본 meta 태그들 추가",
+            "status": "done",
+            "dependencies": [
+              4
+            ]
+          },
+          {
+            "id": 6,
+            "title": "템플릿 스타일 적용 테스트",
+            "description": "빌드와 타입체크가 성공적으로 완료되는지 확인",
+            "details": "npm run build와 npm run typecheck 성공 확인, CSS/JS 파일 경로 검증 완료",
+            "status": "done",
+            "dependencies": [
+              5
+            ]
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "기본 레이아웃 컴포넌트 구현",
+        "description": "Header, Footer, Layout 등 기본 레이아웃 컴포넌트를 Magzin 템플릿 구조를 유지하며 구현",
+        "details": "Layout.tsx, Header.tsx, Footer.tsx 구현. 기존 HTML 구조 최대한 유지하며 React 컴포넌트로 변환. 각 컴포넌트 500줄 이하 유지",
+        "testStrategy": "레이아웃이 모든 페이지에서 일관되게 표시되는지 확인",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "HTML 템플릿 구조 분석 (Header, Footer, Layout)",
+            "description": "index.html에서 Header(Topbar + Navigation)와 Footer 구조를 분석하여 React 컴포넌트 설계 방향 결정",
+            "details": "Topbar: Breaking news ticker, newsletter subscription, date display. Navigation: Logo, tagline, main menu (Home, Latest, Categories). Footer: Logo, tagline, footer links",
+            "status": "done",
+            "dependencies": []
+          },
+          {
+            "id": 2,
+            "title": "Header 컴포넌트 구현 (Topbar + Navigation)",
+            "description": "Topbar(데스크톱 전용)와 Navigation을 포함한 완전한 Header 컴포넌트 구현",
+            "details": "Topbar: Breaking news ticker with Swiper, Newsletter subscription, Date display. Navigation: Logo with Link, simplified navigation (Home, Latest, Categories), mobile responsive",
+            "status": "done",
+            "dependencies": [
+              1
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Footer 컴포넌트 구현",
+            "description": "로고, 태그라인, 푸터 링크들을 포함한 Footer 컴포넌트 구현",
+            "details": "중앙 정렬된 로고, 'Your Gateway to Global News' 태그라인, Privacy Policy, Terms of Use 등 링크, Scroll to top 버튼 포함",
+            "status": "done",
+            "dependencies": [
+              2
+            ]
+          },
+          {
+            "id": 4,
+            "title": "Layout 컴포넌트 구현 및 통합",
+            "description": "Header와 Footer를 통합하는 Layout 컴포넌트 구현",
+            "details": "Header, main content area, Footer를 포함하는 완전한 레이아웃 구조. children prop을 통한 페이지 콘텐츠 렌더링",
+            "status": "done",
+            "dependencies": [
+              3
+            ]
+          },
+          {
+            "id": 5,
+            "title": "컴포넌트 타입 정의 및 Props 인터페이스",
+            "description": "TypeScript 인터페이스 정의 및 각 컴포넌트의 Props 타입 설정",
+            "details": "~/types/layout.ts 파일 생성, HeaderProps, FooterProps, LayoutProps 인터페이스 정의, 추가 타입들(NavItem, BreakingNewsItem, SocialLink) 정의",
+            "status": "done",
+            "dependencies": [
+              4
+            ]
+          },
+          {
+            "id": 6,
+            "title": "레이아웃 컴포넌트 테스트 및 검증",
+            "description": "TypeScript 컴파일, 빌드 성공, index 페이지에서 Layout 컴포넌트 통합 테스트",
+            "details": "npm run typecheck 성공, npm run build 성공, _index.tsx에서 Layout 컴포넌트 사용하여 템플릿 스타일이 올바르게 적용되는지 확인 완료",
+            "status": "done",
+            "dependencies": [
+              5
+            ]
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "라우팅 구조 설정",
+        "description": "Home, Latest, Categories 3개 메뉴에 대한 라우팅 구조 설정",
+        "details": "Remix 라우팅 파일 생성(_index.tsx, latest.tsx, categories.tsx), 기본 페이지 구조 구현",
+        "testStrategy": "각 라우트가 올바르게 작동하는지 확인",
+        "priority": "high",
+        "dependencies": [
+          4
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Remix 라우팅 구조 분석 및 계획",
+            "description": "파일 기반 라우팅을 활용한 3개 페이지 구조 설계",
+            "details": "_index.tsx (Home), latest.tsx (/latest), categories.tsx (/categories) 파일 구조 계획",
+            "status": "done",
+            "dependencies": []
+          },
+          {
+            "id": 2,
+            "title": "Latest 페이지 라우트 생성",
+            "description": "single-2.html 템플릿 기반 Latest 페이지 구현",
+            "details": "최신 포스트 그리드 레이아웃, 페이지네이션, 샘플 포스트 카드들, 카테고리 배지 포함",
+            "status": "done",
+            "dependencies": [
+              1
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Categories 페이지 라우트 생성",
+            "description": "archive-2.html 템플릿 기반 Categories 페이지 구현",
+            "details": "PRD의 10개 서브도메인을 카테고리로 활용, 카드 그리드 레이아웃, 포스트 수 표시, 인기 태그 섹션",
+            "status": "done",
+            "dependencies": [
+              2
+            ]
+          },
+          {
+            "id": 4,
+            "title": "기본 페이지 스타일 및 구조 설정",
+            "description": "공통 CSS 스타일 추가 및 페이지 개선 효과 구현",
+            "details": "custom-pages.css 생성, 호버 효과, 애니메이션, 반응형 개선, 접근성 향상",
+            "status": "done",
+            "dependencies": [
+              3
+            ]
+          },
+          {
+            "id": 5,
+            "title": "네비게이션 활성 상태 처리",
+            "description": "현재 페이지에 맞는 네비게이션 활성 상태 표시",
+            "details": "useLocation 훅 사용, Header 컴포넌트에서 현재 경로 기반 active 클래스 적용, 데스크톱/모바일 모두 지원",
+            "status": "done",
+            "dependencies": [
+              4
+            ]
+          },
+          {
+            "id": 6,
+            "title": "라우팅 테스트 및 검증",
+            "description": "TypeScript 컴파일, 빌드 성공, 모든 라우트 접근 확인",
+            "details": "npm run typecheck 성공, npm run build 성공, 3개 라우트 파일 생성 완료, 네비게이션 동작 검증",
+            "status": "done",
+            "dependencies": [
+              5
+            ]
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Supabase 클라이언트 설정 및 데이터 로더 구현",
+        "description": "Supabase 클라이언트 초기화 및 Remix 로더 함수 구현",
+        "details": "Supabase 클라이언트 설정, 환경 변수 구성, 데이터 페칭을 위한 로더 함수 구현",
+        "testStrategy": "데이터베이스에서 데이터를 올바르게 가져오는지 확인",
+        "priority": "high",
+        "dependencies": [
+          2,
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Home 페이지 구현 (index.html 기반)",
+        "description": "index.html 템플릿을 기반으로 Home 페이지 구현",
+        "details": "Hero 섹션, Latest News 섹션 구현. 동적 데이터 렌더링, 카드 컴포넌트 활용",
+        "testStrategy": "홈페이지가 디자인대로 표시되고 데이터가 동적으로 로드되는지 확인",
+        "priority": "high",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "카드 컴포넌트 구현",
+        "description": "포스트 표시를 위한 다양한 카드 컴포넌트 구현",
+        "details": "Card1.tsx, Card2.tsx 등 카드 컴포넌트 구현. 각 컴포넌트 200줄 이하 유지",
+        "testStrategy": "카드 컴포넌트가 다양한 데이터로 올바르게 렌더링되는지 확인",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Latest 페이지 구현 (single-2.html 기반)",
+        "description": "single-2.html 템플릿을 기반으로 Latest 페이지 구현",
+        "details": "최신 포스트 리스트 표시, 페이지네이션 구현, 기존 HTML 구조 유지",
+        "testStrategy": "최신 포스트가 올바른 순서로 표시되는지 확인",
+        "priority": "medium",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Categories 페이지 구현 (archive-2.html 기반)",
+        "description": "archive-2.html 템플릿을 기반으로 Categories 페이지 구현",
+        "details": "카테고리 그리드 레이아웃 구현, 카테고리별 포스트 수 표시",
+        "testStrategy": "모든 카테고리가 그리드 형태로 올바르게 표시되는지 확인",
+        "priority": "medium",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "포스트 상세 페이지 구현",
+        "description": "개별 포스트를 표시하는 상세 페이지 구현",
+        "details": "동적 라우팅 설정, 포스트 내용 표시, 관련 포스트 표시",
+        "testStrategy": "포스트 상세 내용이 올바르게 표시되는지 확인",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Google OAuth 인증 구현",
+        "description": "댓글 작성을 위한 Google OAuth 인증 시스템 구현",
+        "details": "Supabase Auth를 이용한 Google OAuth 설정, 로그인/로그아웃 기능 구현",
+        "testStrategy": "Google 계정으로 로그인/로그아웃이 정상 작동하는지 확인",
+        "priority": "medium",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "댓글 시스템 구현",
+        "description": "포스트에 댓글을 작성하고 표시하는 시스템 구현",
+        "details": "댓글 작성 폼, 댓글 리스트, 실시간 업데이트 구현",
+        "testStrategy": "댓글 CRUD 기능이 정상 작동하는지 확인",
+        "priority": "medium",
+        "dependencies": [
+          11,
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "서브도메인별 테마 색상 시스템 구현",
+        "description": "각 서브도메인(tech, food, travel 등)별 고유 색상 테마 적용 시스템 구현",
+        "details": "CSS 변수를 이용한 동적 테마 색상 시스템, body 클래스 기반 테마 적용",
+        "testStrategy": "각 서브도메인에서 올바른 테마 색상이 적용되는지 확인",
+        "priority": "medium",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "관리자 인증 시스템 구현",
+        "description": "간단한 ID/PW 기반 관리자 인증 시스템 구현",
+        "details": "관리자 로그인 페이지, 세션 관리, 보호된 라우트 구현",
+        "testStrategy": "관리자 인증이 정상 작동하고 보호된 페이지 접근이 제어되는지 확인",
+        "priority": "low",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "이미지 최적화 및 Lazy Loading 구현",
+        "description": "성능 향상을 위한 이미지 최적화 및 Lazy Loading 구현",
+        "details": "이미지 포맷 최적화, lazy loading 속성 추가, 반응형 이미지 처리",
+        "testStrategy": "이미지 로딩 성능이 개선되었는지 확인",
+        "priority": "low",
+        "dependencies": [
+          7,
+          9,
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "페이지네이션 시스템 구현",
+        "description": "포스트 리스트를 위한 페이지네이션 시스템 구현",
+        "details": "페이지 번호 표시, 이전/다음 버튼, URL 파라미터 처리",
+        "testStrategy": "페이지네이션이 올바르게 작동하는지 확인",
+        "priority": "low",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "캐싱 전략 구현",
+        "description": "성능 향상을 위한 캐싱 전략 구현",
+        "details": "Remix 캐싱 헤더 설정, 정적 자산 캐싱, 데이터 캐싱 전략",
+        "testStrategy": "캐싱이 올바르게 작동하고 성능이 향상되는지 확인",
+        "priority": "low",
+        "dependencies": [
+          7,
+          9,
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Vercel 배포 설정",
+        "description": "Vercel에 프로젝트 배포 및 환경 변수 설정",
+        "details": "Vercel 프로젝트 생성, 환경 변수 설정, 빌드 설정 구성",
+        "testStrategy": "Vercel에 성공적으로 배포되고 작동하는지 확인",
+        "priority": "medium",
+        "dependencies": [
+          18
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "멀티 서브도메인 설정 및 최종 테스트",
+        "description": "10개 서브도메인 설정 및 전체 시스템 통합 테스트",
+        "details": "Vercel에서 서브도메인 설정, DNS 구성, 각 서브도메인별 테스트",
+        "testStrategy": "모든 서브도메인이 올바르게 작동하고 각자의 테마가 적용되는지 확인",
+        "priority": "high",
+        "dependencies": [
+          19
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-08-01T00:00:00Z",
+      "updated": "2025-08-01T08:50:57.463Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

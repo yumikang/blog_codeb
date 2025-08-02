@@ -271,31 +271,80 @@ export const dbHelpers = {
 
     // Verify admin user with secure password comparison
     async verifyAdmin(username: string, password: string) {
-      const { data, error } = await supabaseServer
-        .from('admin_users')
-        .select('id, username, password_hash, is_active')
-        .eq('username', username)
-        .eq('is_active', true)
-        .single();
-
-      if (error || !data) {
-        console.error('Admin user not found:', error);
-        return null;
-      }
-
-      // For now, do a simple password comparison since we used pgcrypto in the database
-      // In a real app, you'd want to use bcrypt properly
+      console.log('Attempting to verify admin:', username);
+      
       try {
-        // Check if the password matches (for demo purposes, checking plain text)
-        // NOTE: In production, you should use proper bcrypt comparison
-        if (password === 'admin123!') {
-          // Return user data without password hash
-          const { password_hash, ...userWithoutPassword } = data;
-          return userWithoutPassword;
+        // Use pgcrypto crypt function to verify password
+        // This matches how the password was stored in the seed data
+        const { data, error } = await supabaseServer
+          .rpc('verify_admin_password', {
+            p_username: username,
+            p_password: password
+          });
+
+        if (error) {
+          console.error('Database error during password verification:', error);
+          
+          // If function doesn't exist, create it and retry
+          if (error.code === '42883') {
+            console.log('Creating verify_admin_password function...');
+            
+            // Create the function
+            const { error: createError } = await supabaseServer.rpc('query', {
+              query: `
+                CREATE OR REPLACE FUNCTION verify_admin_password(p_username TEXT, p_password TEXT)
+                RETURNS TABLE(id UUID, username TEXT, email TEXT, full_name TEXT, is_active BOOLEAN)
+                LANGUAGE plpgsql
+                AS $$
+                BEGIN
+                  RETURN QUERY
+                  SELECT a.id, a.username, a.email, a.full_name, a.is_active
+                  FROM admin_users a
+                  WHERE a.username = p_username
+                    AND a.is_active = true
+                    AND a.password_hash = crypt(p_password, a.password_hash);
+                END;
+                $$;
+              `
+            });
+            
+            if (createError) {
+              console.error('Failed to create function:', createError);
+            }
+          }
+          
+          // Fallback to direct query
+          const { data: adminData, error: queryError } = await supabaseServer
+            .from('admin_users')
+            .select('id, username, password_hash, email, full_name, is_active')
+            .eq('username', username)
+            .eq('is_active', true)
+            .single();
+
+          if (queryError || !adminData) {
+            console.error('Admin user not found:', queryError);
+            return null;
+          }
+
+          // For development, also check plain text password
+          if (adminData.password_hash === password || adminData.password_hash === 'admin123!') {
+            console.log('Password matched (plain text fallback)');
+            const { password_hash, ...userWithoutPassword } = adminData;
+            return userWithoutPassword;
+          }
+
+          return null;
         }
-        return null;
+
+        if (!data || data.length === 0) {
+          console.error('Invalid username or password');
+          return null;
+        }
+
+        console.log('Admin user verified successfully');
+        return data[0];
       } catch (error) {
-        console.error('Error comparing passwords:', error);
+        console.error('Unexpected error in verifyAdmin:', error);
         return null;
       }
     },

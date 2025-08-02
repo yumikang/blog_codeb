@@ -1,33 +1,14 @@
 {
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "framework": null,
+  "framework": "remix",
   "regions": ["icn1"],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api",
-      "has": [
-        {
-          "type": "host",
-          "value": "(?<subdomain>tech|food|travel|lifestyle|business|health|sports|entertainment|science|education)\\.magzin\\.(?:com|vercel\\.app)"
-        }
-      ]
-    },
-    { "source": "/(.*)", "destination": "/api" }
-  ],
   "env": {
     "NODE_ENV": "production"
   },
   "build": {
     "env": {
       "NODE_ENV": "production"
-    }
-  },
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 30,
-      "memory": 1024
     }
   },
   "headers": [

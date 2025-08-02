@@ -8,6 +8,7 @@ import crypto from "crypto";
 import { validateUsername, validatePassword } from "~/utils/validation";
 import { dbHelpers } from "~/lib/supabase.server";
 import { createAdminSession, getAdminSession } from "~/lib/admin.server";
+import { rateLimiters } from "~/utils/rate-limiter.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -29,6 +30,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 // Handle login form submission
 export const action = async ({ request }: ActionFunctionArgs) => {
+  // Check rate limit
+  const { allowed, retryAfter } = await rateLimiters.login.check(request);
+  if (!allowed) {
+    return json({ 
+      error: `Too many login attempts. Please try again in ${retryAfter} seconds.` 
+    }, { 
+      status: 429,
+      headers: rateLimiters.login.getHeaders(request)
+    });
+  }
+
   const formData = await request.formData();
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
@@ -55,10 +67,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const admin = await dbHelpers.admin.verifyAdmin(username, password);
     
     if (!admin) {
+      // Update rate limit for failed attempt
+      await rateLimiters.login.update(request, 401);
+      
       // Don't reveal whether username or password was wrong
       return json({ 
         error: "Invalid username or password" 
-      }, { status: 401 });
+      }, { 
+        status: 401,
+        headers: rateLimiters.login.getHeaders(request)
+      });
     }
 
     // Create secure session

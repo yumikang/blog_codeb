@@ -217,15 +217,23 @@ export type Profile = Database['public']['Tables']['profiles']['Row'];
 // Extended types with relations
 export type PostWithSubdomain = Post & {
   subdomain?: Subdomain;
-  subdomains?: Subdomain; // For backwards compatibility
 };
 
 export type CommentWithProfile = Comment & {
-  profiles: Profile;
+  profiles?: Profile;
 };
 
-export type PostWithSubdomainAndComments = PostWithSubdomain & {
-  comments: CommentWithProfile[];
+export type PostWithComments = PostWithSubdomain & {
+  comments?: CommentWithProfile[];
+};
+
+// Admin types
+export type AdminSession = {
+  id: string;
+  admin_user_id: string;
+  token: string;
+  expires_at: string;
+  created_at: string;
 };
 
 // Insert types

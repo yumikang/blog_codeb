@@ -77,7 +77,7 @@ export const loader = async ({ }: LoaderFunctionArgs) => {
     if (recentPosts) {
       recentPosts.forEach(post => {
         if (post?.tags && Array.isArray(post.tags)) {
-          post.tags.forEach((tag: any) => {
+          post.tags.forEach((tag: string) => {
             if (typeof tag === 'string') {
               tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
             }

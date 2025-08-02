@@ -1,5 +1,7 @@
 import { dbHelpers } from '~/lib/supabase.server';
 import type { PostWithSubdomain } from '~/types/database';
+import { logger } from '~/utils/logger.server';
+import { withServiceHandler, withArrayServiceHandler } from '~/utils/service-helpers';
 
 export class PostService {
   /**
@@ -12,94 +14,99 @@ export class PostService {
   }) {
     const { subdomain, limit = 10, offset = 0 } = options;
     
-    try {
-      const posts = await dbHelpers.getPosts(subdomain, limit, offset);
-      return { success: true, data: posts };
-    } catch (error) {
-      console.error('PostService.getPosts error:', error);
-      return { 
-        success: false, 
-        error: 'Failed to fetch posts',
-        data: [] 
-      };
-    }
+    return withArrayServiceHandler(
+      'PostService',
+      'getPosts',
+      { subdomain, limit, offset },
+      () => dbHelpers.getPosts(subdomain, limit, offset)
+    );
   }
 
   /**
    * Get a single post by subdomain and slug
    */
   static async getPost(subdomain: string, slug: string) {
-    try {
-      const post = await dbHelpers.getPost(subdomain, slug);
-      
-      if (!post) {
-        return { 
-          success: false, 
-          error: 'Post not found',
-          data: null 
-        };
+    return withServiceHandler(
+      'PostService',
+      'getPost',
+      { subdomain, slug },
+      async () => {
+        const post = await dbHelpers.getPost(subdomain, slug);
+        if (!post) {
+          throw new Error('Post not found');
+        }
+        return post;
       }
-      
-      return { success: true, data: post };
-    } catch (error) {
-      console.error('PostService.getPost error:', error);
-      return { 
-        success: false, 
-        error: 'Failed to fetch post',
-        data: null 
-      };
-    }
+    );
   }
 
   /**
    * Get featured posts for homepage
    */
   static async getFeaturedPosts(limit: number = 3) {
-    try {
-      const posts = await dbHelpers.getPosts(undefined, limit, 0);
-      return { success: true, data: posts };
-    } catch (error) {
-      console.error('PostService.getFeaturedPosts error:', error);
-      return { 
-        success: false, 
-        error: 'Failed to fetch featured posts',
-        data: [] 
-      };
-    }
+    return withArrayServiceHandler(
+      'PostService',
+      'getFeaturedPosts',
+      { limit },
+      () => dbHelpers.getPosts(undefined, limit, 0)
+    );
   }
 
   /**
    * Search posts by query
    */
-  static async searchPosts(query: string, limit: number = 10) {
-    // TODO: Implement full-text search
-    // For now, return empty results
-    return { 
-      success: true, 
-      data: [],
-      message: 'Search functionality not yet implemented' 
-    };
+  static async searchPosts(query: string, limit: number = 10, offset: number = 0) {
+    return withArrayServiceHandler(
+      'PostService',
+      'searchPosts',
+      { query, limit, offset },
+      async () => {
+        const { data, error } = await dbHelpers.admin.searchPosts(query, limit, offset);
+        if (error) throw error;
+        return data || [];
+      }
+    );
   }
 
   /**
    * Get posts by tag
    */
   static async getPostsByTag(tag: string, limit: number = 10, offset: number = 0) {
-    // TODO: Implement tag-based filtering
-    // For now, return empty results
-    return { 
-      success: true, 
-      data: [],
-      message: 'Tag filtering not yet implemented' 
-    };
+    return withArrayServiceHandler(
+      'PostService',
+      'getPostsByTag',
+      { tag, limit, offset },
+      async () => {
+        const { data, error } = await dbHelpers.admin.getPostsByTag(tag, limit, offset);
+        if (error) throw error;
+        return data || [];
+      }
+    );
   }
 
   /**
    * Increment view count for a post
    */
   static async incrementViewCount(postId: string) {
-    // TODO: Implement view count increment
-    // Should be done asynchronously to not block page load
-    return { success: true };
+    return withServiceHandler(
+      'PostService',
+      'incrementViewCount',
+      { postId },
+      async () => {
+        // Run asynchronously without waiting for result
+        setImmediate(async () => {
+          try {
+            await dbHelpers.admin.incrementPostViews(postId);
+          } catch (error) {
+            logger.error('Failed to increment view count', error, {
+              service: 'PostService',
+              operation: 'incrementViewCount',
+              postId
+            });
+          }
+        });
+        return true;
+      }
+    );
   }
 }

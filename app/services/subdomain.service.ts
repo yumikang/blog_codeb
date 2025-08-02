@@ -1,5 +1,7 @@
 import { dbHelpers } from '~/lib/supabase.server';
 import type { Subdomain } from '~/types/database';
+import { logger } from '~/utils/logger.server';
+import { withServiceHandler, withArrayServiceHandler } from '~/utils/service-helpers';
 
 export class SubdomainService {
   private static subdomainCache: Map<string, { data: Subdomain[]; timestamp: number }> = new Map();
@@ -9,69 +11,59 @@ export class SubdomainService {
    * Get all active subdomains with caching
    */
   static async getActiveSubdomains(): Promise<{ success: boolean; data: Subdomain[]; fromCache?: boolean }> {
-    try {
-      // Check cache first
-      const cached = this.subdomainCache.get('active');
-      if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-        return { 
-          success: true, 
-          data: cached.data,
-          fromCache: true 
-        };
-      }
-
-      // Fetch from database
-      const subdomains = await dbHelpers.getSubdomains();
-      
-      // Update cache
-      this.subdomainCache.set('active', {
-        data: subdomains || [],
-        timestamp: Date.now()
-      });
-
+    // Check cache first
+    const cached = this.subdomainCache.get('active');
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
       return { 
         success: true, 
-        data: subdomains || [] 
-      };
-    } catch (error) {
-      console.error('SubdomainService.getActiveSubdomains error:', error);
-      
-      // If error, try to return cached data even if stale
-      const cached = this.subdomainCache.get('active');
-      if (cached) {
-        return { 
-          success: true, 
-          data: cached.data,
-          fromCache: true 
-        };
-      }
-
-      return { 
-        success: false, 
-        data: [] 
+        data: cached.data,
+        fromCache: true 
       };
     }
+
+    const result = await withArrayServiceHandler(
+      'SubdomainService',
+      'getActiveSubdomains',
+      {},
+      async () => {
+        const subdomains = await dbHelpers.getSubdomains();
+        
+        // Update cache
+        this.subdomainCache.set('active', {
+          data: subdomains || [],
+          timestamp: Date.now()
+        });
+
+        return subdomains || [];
+      }
+    );
+
+    // If error, try to return cached data even if stale
+    if (!result.success && cached) {
+      return { 
+        success: true, 
+        data: cached.data,
+        fromCache: true 
+      };
+    }
+
+    return result;
   }
 
   /**
    * Get subdomain by name
    */
   static async getSubdomainByName(name: string): Promise<{ success: boolean; data: Subdomain | null }> {
-    try {
-      const { data: subdomains } = await this.getActiveSubdomains();
-      const subdomain = subdomains.find(s => s.name === name) || null;
-      
-      return { 
-        success: true, 
-        data: subdomain 
-      };
-    } catch (error) {
-      console.error('SubdomainService.getSubdomainByName error:', error);
-      return { 
-        success: false, 
-        data: null 
-      };
-    }
+    return withServiceHandler(
+      'SubdomainService',
+      'getSubdomainByName',
+      { name },
+      async () => {
+        const { data: subdomains } = await this.getActiveSubdomains();
+        const subdomain = subdomains.find(s => s.name === name) || null;
+        return subdomain;
+      }
+    );
   }
 
   /**

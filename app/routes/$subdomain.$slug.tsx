@@ -6,7 +6,7 @@ import Layout from "~/components/Layout";
 import { dbHelpers, supabaseServer } from "~/lib/supabase.server";
 import { getEnvironmentConfig } from "~/lib/env.server";
 import { EnvironmentWarning, EmptyState } from "~/components/ErrorBoundary";
-import type { PostWithSubdomain } from "~/types/database";
+import type { PostWithSubdomain, CommentWithProfile } from "~/types/database";
 import { Card5 } from "~/components/cards";
 import { getUser } from "~/lib/auth.server";
 
@@ -343,7 +343,7 @@ export default function PostDetail() {
                 {/* Tags and Share */}
                 <div className="d-flex flex-wrap gap-4 align-items-center justify-content-between mb-4">
                   <div className="d-flex align-items-center gap-2">
-                    {post.tags && Array.isArray(post.tags) && post.tags.map((tag: any, index: number) => (
+                    {post.tags && Array.isArray(post.tags) && post.tags.map((tag: string, index: number) => (
                       <a key={index} href="#" className="tag-item">
                         <span>{typeof tag === 'string' ? tag : tag.name || 'tag'}</span>
                       </a>
@@ -443,7 +443,7 @@ export default function PostDetail() {
                 {/* Comments */}
                 <h4 className="mt-5 mb-2 pt-3 wow img-custom-anim-top">Comments ({comments?.length || 0})</h4>
                 {comments && comments.length > 0 ? (
-                  comments.map((comment: any) => (
+                  comments.map((comment: CommentWithProfile) => (
                     <div key={comment.id} className="d-flex flex-wrap flex-lg-nowrap gap-4 align-items-start pt-4 border-top wow img-custom-anim-top">
                       <div className="icon-shape bg-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">

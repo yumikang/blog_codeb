@@ -138,8 +138,36 @@ export function ClientScripts() {
       try {
         const scriptsToLoad = getScriptsForRoute();
         
-        // Load scripts in sequence based on dependencies
+        // Load critical scripts first (jQuery)
+        if (scriptGroups.critical.length > 0) {
+          for (const src of scriptGroups.critical) {
+            try {
+              await loadScript(src);
+            } catch (error) {
+              console.warn(`Failed to load critical script: ${src}`, error);
+            }
+          }
+        }
+        
+        // Load animation dependencies before main scripts
+        if (scriptsToLoad.includes('/js/gsap-custom.js') || scriptsToLoad.includes('/js/main.js')) {
+          // Ensure GSAP is loaded first
+          for (const src of scriptGroups.animation) {
+            try {
+              await loadScript(src);
+            } catch (error) {
+              console.warn(`Failed to load animation script: ${src}`, error);
+            }
+          }
+        }
+        
+        // Load remaining scripts
         for (const src of scriptsToLoad) {
+          // Skip if already loaded in previous steps
+          if (scriptGroups.critical.includes(src) || scriptGroups.animation.includes(src)) {
+            continue;
+          }
+          
           try {
             await loadScript(src);
           } catch (error) {
@@ -147,10 +175,6 @@ export function ClientScripts() {
             // Continue loading other scripts even if one fails
           }
         }
-        
-        // Scripts will initialize themselves
-        // AOS is initialized in main.js
-        // WOW is initialized in main.js or gsap-custom.js
         
         // Remove preloader after scripts are loaded
         const preloader = document.getElementById('preloader');
@@ -177,9 +201,28 @@ export function ClientScripts() {
 // Type declarations for window object
 declare global {
   interface Window {
-    AOS: any;
-    WOW: any;
-    jQuery: any;
-    $: any;
+    AOS: {
+      init: (options?: object) => void;
+      refresh: () => void;
+    };
+    WOW: {
+      new (options?: object): {
+        init: () => void;
+      };
+    };
+    jQuery: JQueryStatic;
+    $: JQueryStatic;
   }
+}
+
+// Basic jQuery type for our needs
+interface JQueryStatic {
+  (selector: string | Element | Document): JQuery;
+  noConflict: (removeAll?: boolean) => JQueryStatic;
+}
+
+interface JQuery {
+  ready: (handler: () => void) => JQuery;
+  on: (event: string, handler: Function) => JQuery;
+  off: (event: string, handler?: Function) => JQuery;
 }

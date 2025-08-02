@@ -1,12 +1,57 @@
 import { Link, useLocation } from "@remix-run/react";
 import { HeaderProps } from "~/types/layout";
+import { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 export default function Header({ className = "" }: HeaderProps) {
   const location = useLocation();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabaseUrl = window.ENV?.SUPABASE_URL;
+      const supabaseAnonKey = window.ENV?.SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseAnonKey) {
+        setIsLoading(false);
+        return;
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+      
+      // Get initial session
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setIsLoading(false);
+
+      // Listen for auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user || null);
+      });
+
+      return () => subscription.unsubscribe();
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleLogout = async () => {
+    const supabaseUrl = window.ENV?.SUPABASE_URL;
+    const supabaseAnonKey = window.ENV?.SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey) return;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
+
   return (
     <header className={className}>
       {/* Topbar - Desktop Only */}
-      <div className="topbar d-none d-lg-block">
+      <div className="topbar d-none d-lg-block" style={{ backgroundColor: 'var(--theme-primary)' }}>
         <div className="overflow-hidden">
           <div className="d-flex justify-content-between align-items-center">
             <div className="left">
@@ -137,6 +182,32 @@ export default function Header({ className = "" }: HeaderProps) {
           </ul>
         </div>
 
+        {/* Auth Section */}
+        <div className="d-flex align-items-center gap-3">
+          {!isLoading && (
+            <>
+              {user ? (
+                <div className="d-flex align-items-center gap-3">
+                  <span className="text-muted fs-7">{user.email}</span>
+                  <button 
+                    className="btn btn-sm btn-outline-dark"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <Link 
+                  to="/login" 
+                  className="btn btn-sm btn-primary"
+                >
+                  Sign In
+                </Link>
+              )}
+            </>
+          )}
+        </div>
+
         {/* Mobile Menu Toggle */}
         <button 
           className="navbar-toggler d-lg-none" 
@@ -176,6 +247,31 @@ export default function Header({ className = "" }: HeaderProps) {
               >
                 Categories
               </Link>
+            </li>
+            {/* Mobile Auth Section */}
+            <li className="nav-item mt-3 pt-3 border-top">
+              {!isLoading && (
+                <>
+                  {user ? (
+                    <>
+                      <div className="text-muted fs-7 mb-2">{user.email}</div>
+                      <button 
+                        className="btn btn-sm btn-outline-dark w-100"
+                        onClick={handleLogout}
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <Link 
+                      to="/login" 
+                      className="btn btn-sm btn-primary w-100"
+                    >
+                      Sign In
+                    </Link>
+                  )}
+                </>
+              )}
             </li>
           </ul>
         </div>

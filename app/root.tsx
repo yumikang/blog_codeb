@@ -4,8 +4,12 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { ClientScripts } from "~/components/ClientScripts";
+import { getSecurityHeaders } from "~/utils/security.server";
 
 export const links: LinksFunction = () => [
   // Favicon
@@ -34,7 +38,26 @@ export const links: LinksFunction = () => [
   
   // Custom Pages CSS
   { rel: "stylesheet", href: "/css/custom-pages.css" },
+  
+  // Theme CSS Variables
+  { rel: "stylesheet", href: "/css/themes.css" },
 ];
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const securityHeaders = getSecurityHeaders();
+  
+  return json({
+    env: {
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+    },
+  }, {
+    headers: {
+      ...securityHeaders,
+      "Cache-Control": "public, max-age=300"
+    }
+  });
+};
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -47,47 +70,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {/* Preloader */}
-        <div id="preloader">
-          <div id="loader" className="loader">
-            <div className="loader-container">
-              <div className="loader-icon">
-                <img src="/imgs/template/logo/logo-gradient.svg" alt="Preloader" />
-              </div>
-            </div>
-          </div>
-        </div>
-        
         {children}
-        
-        {/* JavaScript Libraries */}
-        <script src="/js/vendors/jquery-3.7.1.min.js"></script>
-        <script src="/js/vendors/swiper-bundle.min.js"></script>
-        <script src="/js/vendors/aos.js"></script>
-        <script src="/js/vendors/jquery.magnific-popup.min.js"></script>
-        <script src="/js/vendors/jquery.carouselTicker.min.js"></script>
-        <script src="/js/vendors/jquery.odometer.min.js"></script>
-        <script src="/js/vendors/jquery.appear.js"></script>
-        <script src="/js/vendors/gsap.min.js"></script>
-        <script src="/js/vendors/ScrollTrigger.min.js"></script>
-        <script src="/js/vendors/ScrollToPlugin.min.js"></script>
-        <script src="/js/vendors/Splitetext.js"></script>
-        <script src="/js/vendors/howler.min.js"></script>
-        <script src="/js/vendors/headhesive.min.js"></script>
-        <script src="/js/vendors/smart-stick-nav.js"></script>
-        <script src="/js/vendors/image-hover-effects.js"></script>
-        <script src="/js/vendors/wow.min.js"></script>
-        {/* 다크모드 관련 스크립트 제외: color-modes.js */}
-        <script src="/js/gsap-custom.js"></script>
-        <script src="/js/main.js"></script>
         
         <ScrollRestoration />
         <Scripts />
+        <ClientScripts />
       </body>
     </html>
   );
 }
 
 export default function App() {
-  return <Outlet />;
+  const data = useLoaderData<typeof loader>();
+  
+  return (
+    <>
+      {/* Pass Supabase config securely via meta tags instead of window.ENV */}
+      <div 
+        id="root"
+        data-supabase-url={data.env.SUPABASE_URL}
+        data-supabase-anon-key={data.env.SUPABASE_ANON_KEY}
+        style={{ display: 'contents' }}
+      >
+        <Outlet />
+      </div>
+    </>
+  );
 }

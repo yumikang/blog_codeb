@@ -5,7 +5,8 @@ import Layout from "~/components/Layout";
 import { dbHelpers } from "~/lib/supabase.server";
 import { getEnvironmentConfig } from "~/lib/env.server";
 import { EnvironmentWarning, EmptyState } from "~/components/ErrorBoundary";
-import type { Subdomain } from "~/types/database";
+import type { Subdomain, PostWithSubdomain } from "~/types/database";
+import { Card9, Card10, Card12 } from "~/components/cards";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const title = data ? `Categories (${data.categories.length}) - Magzin Blog` : "Categories - Magzin Blog";
@@ -33,6 +34,9 @@ export const loader = async ({ }: LoaderFunctionArgs) => {
         categories: [],
         popularTags: [],
         totalCategories: 0,
+        featuredPost: null,
+        latestPosts: [],
+        recommendedPosts: [],
         isEnvironmentReady: false,
         error: 'Environment configuration incomplete'
       });
@@ -88,12 +92,25 @@ export const loader = async ({ }: LoaderFunctionArgs) => {
       .slice(0, 8)
       .map(([tag, count]) => ({ tag, count }));
     
+    // Fetch featured post and latest posts
+    const allPosts = await dbHelpers.getPosts(undefined, 20, 0);
+    const featuredPost = allPosts?.[0] || null;
+    const latestPosts = allPosts?.slice(1, 5) || [];
+    const recommendedPosts = allPosts?.slice(5, 9) || [];
+    
     return json({
       categories: categoriesWithCounts as (Subdomain & { postCount: number })[],
       popularTags,
       totalCategories: categoriesWithCounts.length,
+      featuredPost: featuredPost as PostWithSubdomain | null,
+      latestPosts: latestPosts as PostWithSubdomain[],
+      recommendedPosts: recommendedPosts as PostWithSubdomain[],
       isEnvironmentReady: true,
       error: null
+    }, {
+      headers: {
+        "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400"
+      }
     });
     
   } catch (error) {
@@ -104,8 +121,15 @@ export const loader = async ({ }: LoaderFunctionArgs) => {
       categories: [],
       popularTags: [],
       totalCategories: 0,
+      featuredPost: null,
+      latestPosts: [],
+      recommendedPosts: [],
       isEnvironmentReady: false,
       error: error instanceof Error ? error.message : 'Failed to load categories'
+    }, {
+      headers: {
+        "Cache-Control": "no-cache"
+      }
     });
   }
 };
@@ -181,7 +205,7 @@ const fallbackPopularTags = [
 ];
 
 export default function Categories() {
-  const { categories, popularTags, totalCategories, isEnvironmentReady, error } = useLoaderData<typeof loader>();
+  const { categories, popularTags, totalCategories, featuredPost, latestPosts, recommendedPosts, isEnvironmentReady, error } = useLoaderData<typeof loader>();
 
   // Use dynamic data if available, otherwise fallback
   const displayCategories = isEnvironmentReady && categories.length > 0 ? categories : fallbackCategories;
@@ -189,26 +213,104 @@ export default function Categories() {
 
   return (
     <Layout>
-      <div className="container py-5">
-        <div className="row">
-          <div className="col-12">
-            {/* Page Header */}
-            <div className="text-center mb-5">
-              <h1 className="display-4 mb-3">Categories</h1>
-              <p className="lead text-muted">
-                Explore our diverse range of topics and find content that interests you
-              </p>
-              {isEnvironmentReady && totalCategories > 0 && (
-                <p className="text-muted">
-                  {totalCategories} categories available
-                </p>
-              )}
-            </div>
+      {/* Carousel Ticker Section - Popular Tags */}
+      <div className="categories-banner">
+        <div className="container-fluid">
+          <div className="carouselTicker carouselTicker-nav">
+            <ul className="carouselTicker__list">
+              {displayTags.map((item, index) => (
+                <li key={item?.tag || index} className="carouselTicker__item mx-0">
+                  <a href="#" className="tag-item link-effect-2">
+                    <span className="text">
+                      <span className="text1">{item?.tag?.replace(/-/g, ' ') || 'tag'}</span>
+                      <span className="text2">{item?.tag?.replace(/-/g, ' ') || 'tag'}</span>
+                    </span>
+                    <span className="number">
+                      <span className="odometer text-nowrap" data-count={item?.count || 0}></span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
 
-            {/* Error State */}
-            {!isEnvironmentReady && (
-              <EnvironmentWarning error={error || undefined} />
-            )}
+      {/* Featured Post Section */}
+      {featuredPost && (
+        <section className="sec-1-archive-2">
+          <div className="container">
+            <div className="row mt-5">
+              <div className="col-12">
+                <Card12 post={featuredPost} />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Latest Posts Section */}
+      <section className="sec-5-home-4 pb-70 overflow-hidden">
+        <div className="container">
+          <div className="row g-lg-4 g-5">
+            <div className="col-lg-8">
+              <div className="row mt-2 g-4">
+                {latestPosts.map((post) => post && (
+                  <div key={post.id} className="col-12">
+                    <Card9 post={post} />
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Sidebar */}
+            <div className="col-lg-4">
+              <div className="block-ads bg-200 mb-4">
+                <div className="banner-ads" data-background="/imgs/page/bg-archive1.png">
+                  <img src="/imgs/template/logo/logo-gradient.svg" alt="magzin" />
+                  <h4 className="mt-3">Advertisement</h4>
+                  <p className="text-muted">Your ad could be here</p>
+                </div>
+              </div>
+              
+              {/* Recommended Posts */}
+              <div className="block-recomment">
+                <h5 className="mb-3">Recommended for you</h5>
+                <div className="row g-3">
+                  {recommendedPosts.map((post) => post && (
+                    <div key={post.id} className="col-12">
+                      <Card10 post={post} style={1} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Categories Grid */}
+      <section className="py-5 bg-light">
+        <div className="container">
+          <div className="row">
+            <div className="col-12">
+              {/* Page Header */}
+              <div className="text-center mb-5">
+                <h2 className="display-5 mb-3">Browse Categories</h2>
+                <p className="lead text-muted">
+                  Explore our diverse range of topics and find content that interests you
+                </p>
+                {isEnvironmentReady && totalCategories > 0 && (
+                  <p className="text-muted">
+                    {totalCategories} categories available
+                  </p>
+                )}
+              </div>
+
+              {/* Error State */}
+              {!isEnvironmentReady && (
+                <EnvironmentWarning error={error || undefined} />
+              )}
 
             {/* Categories Grid */}
             <div className="row g-4">
@@ -247,54 +349,20 @@ export default function Categories() {
               ))}
             </div>
 
-            {/* No categories state */}
-            {isEnvironmentReady && categories.length === 0 && (
-              <EmptyState 
-                icon="📂"
-                title="No categories found"
-                description="Categories will appear here once content is added to the database."
-              />
-            )}
-
-            {/* Popular Topics Section */}
-            <div className="mt-5 pt-5 border-top">
-              <div className="row">
-                <div className="col-12">
-                  <h3 className="mb-4 text-center">Popular Topics</h3>
-                  <div className="d-flex flex-wrap justify-content-center gap-2">
-                    {displayTags.map((item, index) => {
-                      // Cycling through Bootstrap colors for variety
-                      const colors = ['primary', 'secondary', 'success', 'warning', 'info', 'danger', 'dark'];
-                      const colorClass = colors[index % colors.length];
-                      
-                      return (
-                        <span 
-                          key={item?.tag || index} 
-                          className={`badge bg-${colorClass}-subtle text-${colorClass} fs-6 px-3 py-2 tag-badge`}
-                          title={isEnvironmentReady ? `${item?.count || 0} posts` : undefined}
-                        >
-                          #{item?.tag?.replace(/-/g, '') || 'tag'} 
-                          {isEnvironmentReady && (
-                            <small className="ms-1">({item?.count || 0})</small>
-                          )}
-                        </span>
-                      );
-                    })}
-                  </div>
-                  
-                  {!isEnvironmentReady && (
-                    <p className="text-center text-muted mt-3">
-                      <small>Connect to database to see real-time popular topics</small>
-                    </p>
-                  )}
-                </div>
-              </div>
+              {/* No categories state */}
+              {isEnvironmentReady && categories.length === 0 && (
+                <EmptyState 
+                  icon="📂"
+                  title="No categories found"
+                  description="Categories will appear here once content is added to the database."
+                />
+              )}
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Custom CSS for hover effects */}
+      {/* Custom CSS for hover effects and carousel */}
       <style dangerouslySetInnerHTML={{
         __html: `
           .hover-card {
@@ -314,6 +382,36 @@ export default function Categories() {
           }
           .tag-badge:hover {
             transform: scale(1.05);
+          }
+          .categories-banner {
+            background: #f8f9fa;
+            padding: 2rem 0;
+            margin-bottom: 3rem;
+          }
+          .tag-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1.5rem;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: #333;
+            white-space: nowrap;
+          }
+          .tag-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+          }
+          .block-ads {
+            background: #f8f9fa;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 8px;
+          }
+          .banner-ads {
+            padding: 3rem 2rem;
           }
         `
       }} />

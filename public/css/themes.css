@@ -1,0 +1,217 @@
+/* Theme CSS Variables for Subdomain Theming */
+
+/* Default Theme (Root) */
+:root {
+  --theme-primary: #3b5aff;
+  --theme-primary-hover: #2847e0;
+  --theme-primary-light: rgba(59, 90, 255, 0.1);
+  --theme-secondary: #6c757d;
+  --theme-accent: #ffc107;
+  --theme-gradient-start: #3b5aff;
+  --theme-gradient-end: #2847e0;
+}
+
+/* Tech Subdomain Theme */
+body.theme-tech {
+  --theme-primary: #00d4ff;
+  --theme-primary-hover: #00b8e6;
+  --theme-primary-light: rgba(0, 212, 255, 0.1);
+  --theme-secondary: #495057;
+  --theme-accent: #00ffff;
+  --theme-gradient-start: #00d4ff;
+  --theme-gradient-end: #0095cc;
+}
+
+/* Food Subdomain Theme */
+body.theme-food {
+  --theme-primary: #ff6b6b;
+  --theme-primary-hover: #ff5252;
+  --theme-primary-light: rgba(255, 107, 107, 0.1);
+  --theme-secondary: #e67e22;
+  --theme-accent: #f39c12;
+  --theme-gradient-start: #ff6b6b;
+  --theme-gradient-end: #ff5252;
+}
+
+/* Travel Subdomain Theme */
+body.theme-travel {
+  --theme-primary: #2ecc71;
+  --theme-primary-hover: #27ae60;
+  --theme-primary-light: rgba(46, 204, 113, 0.1);
+  --theme-secondary: #3498db;
+  --theme-accent: #16a085;
+  --theme-gradient-start: #2ecc71;
+  --theme-gradient-end: #27ae60;
+}
+
+/* Lifestyle Subdomain Theme */
+body.theme-lifestyle {
+  --theme-primary: #e74c3c;
+  --theme-primary-hover: #c0392b;
+  --theme-primary-light: rgba(231, 76, 60, 0.1);
+  --theme-secondary: #9b59b6;
+  --theme-accent: #e67e22;
+  --theme-gradient-start: #e74c3c;
+  --theme-gradient-end: #c0392b;
+}
+
+/* Business Subdomain Theme */
+body.theme-business {
+  --theme-primary: #34495e;
+  --theme-primary-hover: #2c3e50;
+  --theme-primary-light: rgba(52, 73, 94, 0.1);
+  --theme-secondary: #7f8c8d;
+  --theme-accent: #3498db;
+  --theme-gradient-start: #34495e;
+  --theme-gradient-end: #2c3e50;
+}
+
+/* Health Subdomain Theme */
+body.theme-health {
+  --theme-primary: #1abc9c;
+  --theme-primary-hover: #16a085;
+  --theme-primary-light: rgba(26, 188, 156, 0.1);
+  --theme-secondary: #48c9b0;
+  --theme-accent: #a3e4d7;
+  --theme-gradient-start: #1abc9c;
+  --theme-gradient-end: #16a085;
+}
+
+/* Sports Subdomain Theme */
+body.theme-sports {
+  --theme-primary: #ff7f00;
+  --theme-primary-hover: #e67300;
+  --theme-primary-light: rgba(255, 127, 0, 0.1);
+  --theme-secondary: #ff9933;
+  --theme-accent: #ffb366;
+  --theme-gradient-start: #ff7f00;
+  --theme-gradient-end: #e67300;
+}
+
+/* Entertainment Subdomain Theme */
+body.theme-entertainment {
+  --theme-primary: #9b59b6;
+  --theme-primary-hover: #8e44ad;
+  --theme-primary-light: rgba(155, 89, 182, 0.1);
+  --theme-secondary: #bb8fce;
+  --theme-accent: #d7bde2;
+  --theme-gradient-start: #9b59b6;
+  --theme-gradient-end: #8e44ad;
+}
+
+/* Science Subdomain Theme */
+body.theme-science {
+  --theme-primary: #3498db;
+  --theme-primary-hover: #2980b9;
+  --theme-primary-light: rgba(52, 152, 219, 0.1);
+  --theme-secondary: #5dade2;
+  --theme-accent: #aed6f1;
+  --theme-gradient-start: #3498db;
+  --theme-gradient-end: #2980b9;
+}
+
+/* Education Subdomain Theme */
+body.theme-education {
+  --theme-primary: #f39c12;
+  --theme-primary-hover: #d68910;
+  --theme-primary-light: rgba(243, 156, 18, 0.1);
+  --theme-secondary: #f5b041;
+  --theme-accent: #fad7a0;
+  --theme-gradient-start: #f39c12;
+  --theme-gradient-end: #d68910;
+}
+
+/* Apply theme colors to Bootstrap and custom components */
+.btn-primary,
+.bg-primary {
+  background-color: var(--theme-primary) !important;
+  border-color: var(--theme-primary) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--theme-primary-hover) !important;
+  border-color: var(--theme-primary-hover) !important;
+}
+
+.text-primary {
+  color: var(--theme-primary) !important;
+}
+
+.border-primary {
+  border-color: var(--theme-primary) !important;
+}
+
+.link-primary {
+  color: var(--theme-primary) !important;
+}
+
+.link-primary:hover {
+  color: var(--theme-primary-hover) !important;
+}
+
+/* Gradient backgrounds */
+.bg-gradient,
+.bg-gradient-1 {
+  background: linear-gradient(135deg, var(--theme-gradient-start) 0%, var(--theme-gradient-end) 100%) !important;
+}
+
+/* Icon shapes and badges */
+.icon-shape.bg-primary {
+  background-color: var(--theme-primary) !important;
+}
+
+.badge-primary {
+  background-color: var(--theme-primary) !important;
+  color: white !important;
+}
+
+/* Form controls */
+.form-control:focus {
+  border-color: var(--theme-primary) !important;
+  box-shadow: 0 0 0 0.2rem var(--theme-primary-light) !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar-thumb {
+  background-color: var(--theme-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-primary-hover);
+}
+
+/* Progress bars */
+.progress-bar {
+  background-color: var(--theme-primary) !important;
+}
+
+/* Active states */
+.nav-link.active,
+.nav-item.active .nav-link {
+  color: var(--theme-primary) !important;
+}
+
+/* Category badges */
+.badge-category {
+  background-color: var(--theme-primary-light) !important;
+  color: var(--theme-primary) !important;
+}
+
+/* Hover effects */
+.hover-primary:hover {
+  color: var(--theme-primary) !important;
+}
+
+/* Loader and spinners */
+.spinner-border-primary {
+  color: var(--theme-primary) !important;
+}
+
+/* Alerts */
+.alert-primary {
+  background-color: var(--theme-primary-light) !important;
+  border-color: var(--theme-primary) !important;
+  color: var(--theme-primary) !important;
+}

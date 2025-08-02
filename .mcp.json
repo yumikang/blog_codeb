@@ -1,0 +1,22 @@
+{
+	"mcpServers": {
+		"task-master": {
+			"type": "stdio",
+			"command": "node",
+			"args": [
+				"/opt/homebrew/lib/node_modules/task-master-ai/mcp-server/server.js"
+			]
+		},
+		"supabase": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"supabase-mcp"
+			],
+			"env": {
+				"MCP_API_KEY": "YOUR_MCP_API_KEY_HERE"
+			}
+		}
+	}
+}

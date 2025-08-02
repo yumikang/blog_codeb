@@ -216,7 +216,8 @@ export type Profile = Database['public']['Tables']['profiles']['Row'];
 
 // Extended types with relations
 export type PostWithSubdomain = Post & {
-  subdomains: Subdomain;
+  subdomain?: Subdomain;
+  subdomains?: Subdomain; // For backwards compatibility
 };
 
 export type CommentWithProfile = Comment & {

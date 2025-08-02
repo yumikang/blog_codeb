@@ -6,6 +6,7 @@ import { dbHelpers } from "~/lib/supabase.server";
 import { getEnvironmentConfig } from "~/lib/env.server";
 import { EnvironmentWarning, EmptyState } from "~/components/ErrorBoundary";
 import type { PostWithSubdomain } from "~/types/database";
+import { Card10 } from "~/components/cards";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const title = data ? `Latest News - Page ${data.currentPage} - Magzin Blog` : "Latest News - Magzin Blog";
@@ -62,6 +63,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       postsPerPage,
       isEnvironmentReady: true,
       error: null
+    }, {
+      headers: {
+        "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400"
+      }
     });
     
   } catch (error) {
@@ -76,6 +81,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       postsPerPage: 12,
       isEnvironmentReady: false,
       error: error instanceof Error ? error.message : 'Failed to load posts'
+    }, {
+      headers: {
+        "Cache-Control": "no-cache"
+      }
     });
   }
 };
@@ -135,72 +144,9 @@ export default function Latest() {
             {/* Latest Posts Grid */}
             {isEnvironmentReady && posts.length > 0 ? (
               <div className="row g-4">
-                {posts.map((post) => (
-                  <div key={post?.id || Math.random()} className="col-lg-4 col-md-6">
-                    <article className="card h-100 latest-post-card">
-                      <div className="card-img-top position-relative">
-                        {post?.featured_image_url ? (
-                          <img 
-                            src={post.featured_image_url} 
-                            alt={post.featured_image_alt || post.title || 'Post thumbnail'}
-                            className="w-100"
-                            style={{ height: "200px", objectFit: "cover" }}
-                          />
-                        ) : (
-                          <div 
-                            className="w-100 bg-light d-flex align-items-center justify-content-center"
-                            style={{ height: "200px" }}
-                          >
-                            <span className="text-muted fs-1">📰</span>
-                          </div>
-                        )}
-                        
-                        {post?.subdomains && (
-                          <div className="position-absolute top-0 start-0 m-3">
-                            <span className={`badge bg-${post.subdomains.theme_color || 'primary'}`}>
-                              {post.subdomains.icon_emoji} {post.subdomains.display_name}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="card-body d-flex flex-column">
-                        <div className="mb-2">
-                          <small className="text-muted">
-                            <i className="far fa-calendar me-1"></i>
-                            {post?.published_at ? new Date(post.published_at).toLocaleDateString() : 'Date unknown'}
-                          </small>
-                          {post?.view_count && (
-                            <small className="text-muted ms-3">
-                              <i className="far fa-eye me-1"></i>
-                              {post.view_count} views
-                            </small>
-                          )}
-                        </div>
-                        
-                        <h5 className="card-title">
-                          <a href={`/posts/${post?.slug || '#'}`} className="text-decoration-none text-dark hover-primary">
-                            {post?.title || 'Untitled Post'}
-                          </a>
-                        </h5>
-                        
-                        {post?.excerpt && (
-                          <p className="card-text flex-grow-1 text-muted">
-                            {post.excerpt.length > 120 ? `${post.excerpt.substring(0, 120)}...` : post.excerpt}
-                          </p>
-                        )}
-                        
-                        {post?.tags && post.tags.length > 0 && (
-                          <div className="mt-2">
-                            {post.tags.slice(0, 3).map((tag, index) => (
-                              <span key={index} className="badge bg-light text-dark me-1 mb-1">
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </article>
+                {posts.map((post) => post && (
+                  <div key={post.id} className="col-lg-4 col-md-6">
+                    <Card10 post={post} style={2} />
                   </div>
                 ))}
               </div>

@@ -1,27 +1,40 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '~/types/database';
 
-// Environment variables validation
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase environment variables. Please check your .env file and ensure SUPABASE_URL and SUPABASE_ANON_KEY are set.'
-  );
+// Get Supabase config from window object (injected by server)
+// This is a safer approach than exposing all ENV vars
+function getSupabaseConfig() {
+  if (typeof window === 'undefined') {
+    // During SSR, return empty config
+    return { url: '', anonKey: '' };
+  }
+  
+  // In production, these should be injected via a more secure method
+  // For now, we'll use data attributes on the root element
+  const rootElement = document.getElementById('root');
+  const url = rootElement?.getAttribute('data-supabase-url') || '';
+  const anonKey = rootElement?.getAttribute('data-supabase-anon-key') || '';
+  
+  return { url, anonKey };
 }
 
+const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabaseConfig();
+
 // Create Supabase client for client-side operations
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+// Note: This will only work after hydration when the config is available
+export const supabase = supabaseUrl && supabaseAnonKey 
+  ? createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     storageKey: 'magzin-blog-auth',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
   },
-});
+})
+  : null as any; // Temporary null client before hydration
 
 // Helper function to get current user
 export const getCurrentUser = async () => {
+  if (!supabase) return null;
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error) {
     console.error('Error getting current user:', error);

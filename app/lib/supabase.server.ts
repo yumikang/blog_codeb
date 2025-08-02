@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import bcrypt from 'bcrypt';
 import type { Database } from '~/types/database';
 import { withRetry, withPerformanceLogging, logError, createUserFriendlyError } from '~/lib/error-handler.server';
 
@@ -76,11 +77,12 @@ export const dbHelpers = {
   async getPosts(subdomainName?: string, limit = 10, offset = 0) {
     return withPerformanceLogging(`getPosts(${subdomainName || 'all'})`, async () => {
       return withRetry(async () => {
+        // First, try with foreign key relationship
         let query = supabaseServer
           .from('posts')
           .select(`
             *,
-            subdomains (
+            subdomain:subdomain_id (
               name,
               display_name,
               theme_color,
@@ -91,11 +93,40 @@ export const dbHelpers = {
           .order('published_at', { ascending: false });
 
         if (subdomainName) {
-          query = query.eq('subdomains.name', subdomainName);
+          // Filter by subdomain name using subdomain relationship
+          query = query.eq('subdomain.name', subdomainName);
         }
 
-        const { data, error } = await query
+        let { data, error } = await query
           .range(offset, offset + limit - 1);
+
+        // If foreign key relationship fails, try without subdomain join
+        if (error && error.code === 'PGRST200') {
+          console.warn('Foreign key relationship not found, falling back to posts-only query');
+          
+          query = supabaseServer
+            .from('posts')
+            .select('*')
+            .eq('status', 'published')
+            .order('published_at', { ascending: false });
+
+          if (subdomainName) {
+            // If we have subdomain name, get subdomain ID first
+            const { data: subdomainData } = await supabaseServer
+              .from('subdomains')
+              .select('id')
+              .eq('name', subdomainName)
+              .single();
+            
+            if (subdomainData) {
+              query = query.eq('subdomain_id', subdomainData.id);
+            }
+          }
+
+          const result = await query.range(offset, offset + limit - 1);
+          data = result.data;
+          error = result.error;
+        }
 
         if (error) {
           logError('getPosts', error, { 
@@ -116,20 +147,24 @@ export const dbHelpers = {
   async getPost(subdomainName: string, slug: string) {
     return withPerformanceLogging(`getPost(${subdomainName}/${slug})`, async () => {
       return withRetry(async () => {
+        // First, get subdomain ID
+        const { data: subdomainData } = await supabaseServer
+          .from('subdomains')
+          .select('id, name, display_name, theme_color, icon_emoji')
+          .eq('name', subdomainName)
+          .single();
+
+        if (!subdomainData) {
+          return null; // Subdomain not found
+        }
+
+        // Then get the post
         const { data, error } = await supabaseServer
           .from('posts')
-          .select(`
-            *,
-            subdomains (
-              name,
-              display_name,
-              theme_color,
-              icon_emoji
-            )
-          `)
+          .select('*')
           .eq('slug', slug)
           .eq('status', 'published')
-          .eq('subdomains.name', subdomainName)
+          .eq('subdomain_id', subdomainData.id)
           .single();
 
         if (error) {
@@ -144,7 +179,11 @@ export const dbHelpers = {
           throw createUserFriendlyError('fetch post', error);
         }
 
-        return data;
+        // Manually attach subdomain data
+        return {
+          ...data,
+          subdomain: subdomainData
+        };
       });
     });
   },
@@ -187,7 +226,7 @@ export const dbHelpers = {
         .from('posts')
         .select(`
           *,
-          subdomains (
+          subdomain:subdomain_id (
             name,
             display_name,
             theme_color
@@ -230,7 +269,7 @@ export const dbHelpers = {
       return data;
     },
 
-    // Verify admin user
+    // Verify admin user with secure password comparison
     async verifyAdmin(username: string, password: string) {
       const { data, error } = await supabaseAdmin
         .from('admin_users')
@@ -243,10 +282,26 @@ export const dbHelpers = {
         return null;
       }
 
-      // In production, you would use bcrypt to compare passwords
-      // For now, we'll do a simple comparison (NOT SECURE)
-      // TODO: Implement proper password hashing with bcrypt
-      return data;
+      // Securely compare password with bcrypt
+      try {
+        const isValidPassword = await bcrypt.compare(password, data.password_hash);
+        if (!isValidPassword) {
+          return null;
+        }
+        
+        // Return user data without password hash
+        const { password_hash, ...userWithoutPassword } = data;
+        return userWithoutPassword;
+      } catch (error) {
+        console.error('Error comparing passwords:', error);
+        return null;
+      }
+    },
+    
+    // Helper to hash passwords for new admin users
+    async hashPassword(password: string) {
+      const saltRounds = 10;
+      return await bcrypt.hash(password, saltRounds);
     },
   },
 };

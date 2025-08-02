@@ -6,6 +6,7 @@ import { dbHelpers } from "~/lib/supabase.server";
 import { getEnvironmentConfig } from "~/lib/env.server";
 import { EnvironmentWarning } from "~/components/ErrorBoundary";
 import type { PostWithSubdomain, Subdomain } from "~/types/database";
+import { Card1, Card5, Card10 } from "~/components/cards";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const title = data ? "Magzin Blog - Your Gateway to Global News" : "Magzin Blog";
@@ -53,6 +54,10 @@ export const loader = async ({ }: LoaderFunctionArgs) => {
       featuredPosts: featuredPosts as PostWithSubdomain[],
       isEnvironmentReady: true,
       error: null
+    }, {
+      headers: {
+        "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400"
+      }
     });
     
   } catch (error) {
@@ -65,6 +70,10 @@ export const loader = async ({ }: LoaderFunctionArgs) => {
       featuredPosts: [],
       isEnvironmentReady: false,
       error: error instanceof Error ? error.message : 'Failed to load data'
+    }, {
+      headers: {
+        "Cache-Control": "no-cache"
+      }
     });
   }
 };
@@ -99,7 +108,7 @@ export default function Index() {
 
       {/* Featured Posts Section */}
       {isEnvironmentReady && featuredPosts.length > 0 && (
-        <section className="featured-posts py-5">
+        <section className="sec-1-home-1 pt-5">
           <div className="container">
             <div className="row">
               <div className="col-12">
@@ -107,34 +116,9 @@ export default function Index() {
               </div>
             </div>
             <div className="row g-4">
-              {featuredPosts.map((post) => (
-                <div key={post?.id || Math.random()} className="col-lg-4 col-md-6">
-                  <article className="card h-100 shadow-sm">
-                    {post?.featured_image_url && (
-                      <img 
-                        src={post.featured_image_url} 
-                        alt={post.featured_image_alt || post.title || 'Featured image'}
-                        className="card-img-top"
-                        style={{ height: '200px', objectFit: 'cover' }}
-                      />
-                    )}
-                    <div className="card-body d-flex flex-column">
-                      {post?.subdomains && (
-                        <span className={`badge bg-${post.subdomains.theme_color || 'primary'} mb-2 align-self-start`}>
-                          {post.subdomains.display_name || 'Category'}
-                        </span>
-                      )}
-                      <h5 className="card-title">{post?.title || 'Untitled'}</h5>
-                      {post?.excerpt && (
-                        <p className="card-text text-muted flex-grow-1">{post.excerpt}</p>
-                      )}
-                      <div className="mt-auto">
-                        <small className="text-muted">
-                          {post?.published_at && new Date(post.published_at).toLocaleDateString()}
-                        </small>
-                      </div>
-                    </div>
-                  </article>
+              {featuredPosts.map((post) => post && (
+                <div key={post.id} className="col-lg-4 col-md-6">
+                  <Card5 post={post} />
                 </div>
               ))}
             </div>
@@ -198,7 +182,7 @@ export default function Index() {
 
       {/* Latest Posts Section */}
       {isEnvironmentReady && posts.length > 3 && (
-        <section className="latest-posts py-5">
+        <section className="sec-3-home-1 py-5">
           <div className="container">
             <div className="row">
               <div className="col-12">
@@ -206,26 +190,9 @@ export default function Index() {
               </div>
             </div>
             <div className="row g-4">
-              {posts.slice(3).map((post) => (
-                <div key={post?.id || Math.random()} className="col-lg-4 col-md-6">
-                  <article className="card h-100">
-                    <div className="card-body">
-                      {post?.subdomains && (
-                        <span className={`badge bg-${post.subdomains.theme_color || 'primary'} mb-2`}>
-                          {post.subdomains.display_name || 'Category'}
-                        </span>
-                      )}
-                      <h6 className="card-title">{post?.title || 'Untitled'}</h6>
-                      {post?.excerpt && (
-                        <p className="card-text text-muted small">
-                          {post.excerpt.length > 100 ? `${post.excerpt.substring(0, 100)}...` : post.excerpt}
-                        </p>
-                      )}
-                      <small className="text-muted">
-                        {post?.published_at && new Date(post.published_at).toLocaleDateString()}
-                      </small>
-                    </div>
-                  </article>
+              {posts.slice(3).map((post) => post && (
+                <div key={post.id} className="col-lg-4 col-md-6">
+                  <Card10 post={post} style={1} />
                 </div>
               ))}
             </div>

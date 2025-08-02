@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
 );
 
 -- 2. Create trigger for updated_at if not exists
+DROP TRIGGER IF EXISTS update_admin_users_updated_at ON public.admin_users;
 CREATE TRIGGER update_admin_users_updated_at BEFORE UPDATE ON public.admin_users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 

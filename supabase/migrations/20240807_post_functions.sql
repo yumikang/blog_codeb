@@ -52,8 +52,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create index for full-text search
-CREATE INDEX IF NOT EXISTS idx_posts_fulltext ON posts 
-USING gin(to_tsvector('english', title || ' ' || COALESCE(content, '') || ' ' || COALESCE(array_to_string(tags, ' '), '')));
+-- Note: Using column-based indexes instead of expression-based to avoid IMMUTABLE function requirement
+CREATE INDEX IF NOT EXISTS idx_posts_title_fulltext ON posts USING gin(to_tsvector('english', title));
+CREATE INDEX IF NOT EXISTS idx_posts_content_fulltext ON posts USING gin(to_tsvector('english', content)) WHERE content IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_posts_tags_gin ON posts USING gin(tags) WHERE tags IS NOT NULL;
 
 -- Create function to get posts by tag
 CREATE OR REPLACE FUNCTION get_posts_by_tag(

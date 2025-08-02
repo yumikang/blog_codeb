@@ -85,9 +85,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     headers.append("Set-Cookie", cookie);
     
     return redirect("/admin", { headers });
+  } catch (error) {
+    console.error("Admin login error:", error);
+    return json({ error: "An error occurred during login" }, { status: 500 });
   }
-
-  return json({ error: "Invalid username or password" }, { status: 401 });
 };
 
 export default function AdminLogin() {

@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
+  "installCommand": "npm install --force",
   "framework": "remix",
   "regions": ["icn1"],
   "env": {

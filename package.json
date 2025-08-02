@@ -11,13 +11,13 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@remix-run/node": "*",
-    "@remix-run/react": "*",
-    "@remix-run/serve": "*",
+    "@remix-run/node": "2.16.7",
+    "@remix-run/react": "2.16.7",
+    "@remix-run/serve": "2.16.7",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.53.0",
     "@types/bcrypt": "^6.0.0",
-    "@vercel/remix": "^2.16.7",
+    "@vercel/remix": "2.16.7",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.1",
     "isbot": "^4.1.0",
@@ -25,7 +25,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "*",
+    "@remix-run/dev": "2.16.7",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
